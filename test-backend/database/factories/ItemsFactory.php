@@ -20,6 +20,7 @@ class ItemsFactory extends Factory
         return [
             'kode_item' => 'IT-' . strtoupper(Str::random(5)),
             'nama_item' => $this->faker->words(2, true),
+            'stock' => $this->faker->numberBetween(10,100),
             'created_at' => now(),
             'updated_at' => now(),
         ];

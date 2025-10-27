@@ -9,6 +9,12 @@ class Order extends Model
 {
     use HasFactory;
 
+    protected $primaryKey = 'id_order';
+
+    public $incrementing = true; 
+
+    protected $keyType = 'int';
+
     protected $fillable =[
         'tgl_order',
         'no_order',

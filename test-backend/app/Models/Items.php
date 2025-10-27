@@ -15,9 +15,12 @@ class Items extends Model
     public $incrementing = true;
     protected $keyType = 'int';
 
+
     protected $fillable = [
         'kode_item',
-        'nama_item'
+        'nama_item',
+        'stock',
+        'total_sold'
     ];
 
     public function vendorItems(){

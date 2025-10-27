@@ -17,4 +17,5 @@ Route::prefix('/v1')->group(function () {
     require __DIR__ . '/api/auth/auth.php';
     require __DIR__ . '/api/vendor/vendor.php';
     require __DIR__ . '/api/order/order.php';
+    require __DIR__ . '/api/item/item.php';
 });
