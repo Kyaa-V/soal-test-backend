@@ -15,7 +15,8 @@ return new class extends Migration
             $table->id('id_item');
             $table->string('kode_item')->unique();
             $table->string('nama_item');
-            $table->integer('total_sold')->nullable();
+            $table->integer('stock');
+            $table->integer('total_sold')->default(0);
             $table->timestamps();
         });
     }
