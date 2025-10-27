@@ -1,0 +1,93 @@
+services:
+  test-laravel:
+    build:
+      context: ./test-backend
+      dockerfile: ./docker/Dockerfile
+      target: development
+    container_name: test-laravel
+    image: test-laravel-image:latest
+    restart: unless-stopped 
+    ports:
+      - "8000:8000" 
+    env_file:
+      - .env
+    environment:
+      - APP_ENV=${APP_ENV}
+      - APP_DEBUG=${APP_DEBUG}
+      - DB_CONNECTION=${DB_CONNECTION}
+      - DB_HOST=${DB_HOST}
+      - DB_PORT=${DB_PORT}
+      - DB_DATABASE=${DB_DATABASE}
+      - DB_USERNAME=${DB_USERNAME}
+      - DB_PASSWORD=${DB_PASSWORD}
+    depends_on:
+      mysql:
+        condition: service_healthy
+    volumes:
+      - ./test-backend:/var/www
+    networks:
+      - backend-network
+    healthcheck:
+      test: ["CMD", "/var/www/docker/healthcheck.sh"]
+      interval: 30s
+      timeout: 20s
+      retries: 3
+      start_period: 90s
+
+  mysql:
+    image: mysql:9.4
+    container_name: mysql
+    restart: unless-stopped
+    env_file:
+      - .env
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MYSQL_ALLOW_EMPTY_PASSWORD: "no"
+      MYSQL_ROOT_HOST: "%"
+    ports:
+      - "3307:3306"
+    volumes:
+      - mysql-data:/var/lib/mysql
+    networks:
+      - backend-network
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-p${MYSQL_ROOT_PASSWORD}"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 30s
+
+  k6-test:
+    image: grafana/k6:latest
+    container_name: k6-test
+    networks:
+      - backend-network
+    volumes:
+      - ./k6:/scripts
+    entrypoint: ["tail", "-f", "/dev/null"]
+
+  redis:
+    image: redis:latest
+    container_name: redis
+    restart: unless-stopped
+    build:
+      context: ./redis
+      dockerfile: Dockerfile
+    ports:
+      - "6378:6378"
+    healthcheck:
+      test: ["CMD", "redis-cli", "-h", "localhost", "-p", "${REDIS_PORT}", "-a", "${REDIS_PASSWORD}", "ping"]
+      interval: 30s
+      timeout: 3s
+      retries: 3
+    networks:
+      - backend-network
+
+
+networks:
+  backend-network:
+    driver: bridge
+
+volumes:
+  mysql-data:
+    driver: local
